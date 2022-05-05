@@ -24,15 +24,23 @@ void initMyStuff(IDirect3DDevice9* pDevice)
 
 	CUSTOMVERTEX vertices[] =
 	{
-		{ -3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 0, 255), },
-		{ 3.0f, 3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 0), },
-		{ -3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(255, 0, 0), },
-		{ 3.0f, -3.0f, -3.0f, D3DCOLOR_XRGB(0, 255, 255), },
-		{ -3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(0, 0, 255), },
-		{ 3.0f, 3.0f, 3.0f, D3DCOLOR_XRGB(255, 0, 0), },
-		{ -3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 0), },
-		{ 3.0f, -3.0f, 3.0f, D3DCOLOR_XRGB(0, 255, 255), },
+		{ -1.0f, 1.0f, -1.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		{ 1.0f, 1.0f, -1.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		{ -1.0f, -1.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		{ 1.0f, -1.0f, -1.0f, D3DCOLOR_XRGB(0, 255, 255),},
+		{ -1.0f, 1.0f, 1.0f, D3DCOLOR_XRGB(0, 0, 255), },
+		{ 1.0f, 1.0f, 1.0f, D3DCOLOR_XRGB(255, 0, 0), },
+		{ -1.0f, -1.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), },
+		{ 1.0f, -1.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 255), },
 	};
+	CUSTOMVERTEX plyBoxVertex[] =
+	{
+		{ 1.0f, 1.0f, -2.0f, D3DCOLOR_XRGB(0, 255, 255), },
+		{ 1.0f, -1.0f, -2.0f, D3DCOLOR_XRGB(0, 255, 255), },
+		{ -1.0f, -1.0f, -2.0f, D3DCOLOR_XRGB(0, 255, 255), },
+		{ -1.0f, 1.0f, -2.0f, D3DCOLOR_XRGB(0, 255, 255), },
+	};
+
 	pDevice->CreateVertexBuffer(8 * sizeof(CUSTOMVERTEX),
 		0,
 		CUSTOMFVF,
@@ -137,9 +145,9 @@ HRESULT __stdcall Hooked_EndScene(IDirect3DDevice9* pDevice) // hooke endscene
 	pDevice->SetFVF(CUSTOMFVF);
 
 	D3DXMATRIX matView;
-	D3DXVECTOR3 vec1(0.0f, 0.0f, 15.0f);
+	D3DXVECTOR3 vec1(0.0f, -15.0f, 0.0f);
 	D3DXVECTOR3 vec2(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 vec3(0.0f, 1.0f, 0.0f);
+	D3DXVECTOR3 vec3(0.0f, 0.0f, 1.0f);
 	D3DXMatrixLookAtLH(&matView,
 		&vec1,   // camera position
 		&vec2,    // eye position
@@ -158,14 +166,23 @@ HRESULT __stdcall Hooked_EndScene(IDirect3DDevice9* pDevice) // hooke endscene
 
 	D3DXMATRIX rotateY;
 	static float index = 0.0f; index += 0.003f;
-	D3DXMatrixRotationY(&rotateY, index);
+	D3DXMatrixRotationZ(&rotateY, index);
 
 	D3DXMATRIX matPos;
-	D3DXMatrixTranslation(&matPos, 0.0f, 0.0f, -2.0f);
+	D3DXMatrixTranslation(&matPos, 0.0f, 0.0f, 0.0f);
 
 	D3DMATRIX result = (matPos * rotateY);
 	pDevice->SetTransform(D3DTS_WORLD, &result);
 	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+
+	//2nd cube
+	pDevice->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
+	pDevice->SetIndices(i_buffer);
+	D3DXMatrixTranslation(&matPos, 4.0f, 0.0f, 4.0f);
+
+	pDevice->SetTransform(D3DTS_WORLD, &matPos);
+	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+
 
 	return oEndScene(pDevice); // original ensdcene for the game continue drawing
 }
